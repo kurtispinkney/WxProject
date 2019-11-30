@@ -12,16 +12,6 @@ pipeline {
         sh 'python -m py_compile src/extract_flashes.py'
       }
     }
-    stages {
-        stage('Build') {
-            agent {
-                docker {
-                    image 'python:3-alpine'
-                }
-            }
-            steps {
-                sh 'python -m py_compile src/extract_flashes.py'
-            }
     stage('Test') {
       agent {
         docker {

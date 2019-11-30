@@ -1,5 +1,28 @@
+
+
+        stage('Deliver') {
+            agent {
+                docker {
+                    image 'cdrx/pyinstaller-linux:python2'
+                }
+            }
+            steps {
+                sh 'pyinstaller --onefile sources/add2vals.py'
+            }
+            post {
+                success {
+                    archiveArtifacts 'dist/add2vals'
+                }
+            }
+        }
+
+and add a skipStagesAfterUnstable option so that you end up with:
+
 pipeline {
     agent none
+    options {
+        skipStagesAfterUnstable()
+    }
     stages {
         stage('Build') {
             agent {
@@ -8,8 +31,9 @@ pipeline {
                 }
             }
             steps {
-                sh 'python -m py_compile sources/extract_flashes.py'
+                sh 'python -m py_compile src/extract_flashes.py'
             }
+        }
         stage('Test') {
             agent {
                 docker {
@@ -24,7 +48,6 @@ pipeline {
                     junit 'test-reports/results.xml'
                 }
             }
-        }
         }
     }
 }

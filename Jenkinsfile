@@ -1,23 +1,3 @@
-
-
-        stage('Deliver') {
-            agent {
-                docker {
-                    image 'cdrx/pyinstaller-linux:python2'
-                }
-            }
-            steps {
-                sh 'pyinstaller --onefile sources/add2vals.py'
-            }
-            post {
-                success {
-                    archiveArtifacts 'dist/add2vals'
-                }
-            }
-        }
-
-and add a skipStagesAfterUnstable option so that you end up with:
-
 pipeline {
     agent none
     options {

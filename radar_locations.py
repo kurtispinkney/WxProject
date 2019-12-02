@@ -91,4 +91,4 @@ for i, j in enumerate(zip(df2["Lat"], df2["Lon"])):
 
 
 # export radar lat/lon locations
-df2.to_csv("radar_lat_lon.csv")
+df2.to_csv("radar_lat_lon.csv", index=False)

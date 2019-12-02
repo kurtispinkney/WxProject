@@ -11,6 +11,8 @@ Want to identify flashes that are within 250 km of any radar within the U.S.
 import os
 import xarray as xr
 
+from typing import Dict
+
 
 def read_glm_file(glm_file: str):
     if not glm_file.endswith(".nc"):
@@ -20,5 +22,8 @@ def read_glm_file(glm_file: str):
     raise FileNotFoundError
 
 
-def test():
+def get_flashes() -> Dict:
     pass
+
+x = read_glm_file("/Users/kurtispinkney/Desktop/WxProject/OR_GLM-L2-LCFA_G16_s20193002359400_e20193010000000_c20193010000028.nc")
+print(x["flash_lat"].data)

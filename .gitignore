@@ -1,5 +1,8 @@
+.DS_Store
+*V06*
 *.pyc
 .ipynb_checkpoints/
 .idea/
 *.nc
 venv/
+radar_data/

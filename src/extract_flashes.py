@@ -29,6 +29,10 @@ def get_flash_info(glm_data: xr.Dataset) -> Dict:
             in range(len(glm_data["Id"]))}
 
 
+def read_radar_location_info():
+    pass
+
+
 
 # x = read_glm_file("/Users/kurtispinkney/Desktop/WxProject/OR_GLM-L2-LCFA_G16_s20193002359400_e20193010000000_c20193010000028.nc")
 # print(x["flash_lat"].data)

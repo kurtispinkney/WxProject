@@ -23,7 +23,7 @@ def read_glm_file(glm_file: str) -> xr.Dataset:
 
 
 def get_flash_info(glm_data: xr.Dataset) -> Dict:
-    return {glm_data["Id"][idx]:
+    returnm {glm_data["Id"][idx]:
             {"lat": glm_data["Lat"][idx], "lon": glm_data["Lon"][idx]}
             for idx
             in range(len(glm_data["Id"]))}

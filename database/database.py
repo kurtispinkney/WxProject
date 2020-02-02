@@ -1,25 +1,7 @@
 import psycopg2
 
+from config import config
 from configparser import ConfigParser
-
-
-def config(filename='database.ini', section='postgresql'):
-    # create a parser
-    parser = ConfigParser()
-    # read config file
-    parser.read(filename)
-
-    # get section, default to postgresql
-    db = {}
-    if parser.has_section(section):
-        params = parser.items(section)
-        for param in params:
-            db[param[0]] = param[1]
-    else:
-        raise Exception(
-            'Section {0} not found in the {1} file'.format(section, filename))
-
-    return db
 
 
 def connect():
@@ -53,16 +35,5 @@ def connect():
             conn.close()
             print('Database connection closed.')
 
-# conn = psycopg2.connect(host="localhost", database=,
-#                         user="postgres", password=)
-#
-# cur = conn.cursor()
-#
-# # execute a statement
-# print('PostgreSQL database version:')
-# cur.execute('SELECT version()')
-#
-# db_version = cur.fetchone()
-# print(db_version)
-#
-# cur.close()
+
+connect()

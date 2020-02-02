@@ -6,3 +6,4 @@
 *.nc
 venv/
 radar_data/
+*.ini

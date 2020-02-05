@@ -5,87 +5,74 @@ from config import config
 def create_tables():
     """ create tables in the PostgreSQL database"""
     commands = (
+        """ 
+        CREATE TABLE radars (
+            radar_id varchar PRIMARY KEY,
+            lat float NOT NULL,
+            lon float NOT NULL
+        )
+        """,
         """
-        CREATE TABLE "nexrad_data" (
-            filename int PRIMARY KEY,
+        CREATE TABLE nexrad_data (
+            filename varchar PRIMARY KEY,
             s3_object varchar NOT NULL,
-            radar_id str NOT NULL,
+            radar_id varchar NOT NULL,
             year int NOT NULL,
             month int NOT NULL,
             day int NOT NULL,
             hour int NOT NULL,
             min int NOT NULL,
-            second int NOT NULL
+            second int NOT NULL,
             FOREIGN KEY (radar_id)
             REFERENCES radars (radar_id)
             ON UPDATE CASCADE ON DELETE CASCADE
         )
         """,
         """ 
-        CREATE TABLE "radars" (
-          "id" str PRIMARY KEY,
-          "lat" float,
-          "lon" float
-        )
-        """,
-        """ 
-        CREATE TABLE "lightning_data" (
-          "filename" str PRIMARY KEY,
-          "s3_object" varchar
+        CREATE TABLE lightning_data (
+            filename varchar PRIMARY KEY,
+            s3_object varchar NOT NULL
         )
         """,
         """
-        CREATE TABLE "flashes" (
-          "id" SERIAL PRIMARY KEY,
-          "flash_id" int,
-          "data_id" int,
-          "storm_id" into,
-          "lat" float,
-          "lon" float,
-          "area" float,
-          "energy" float,
-          "quality_flag" int
+        CREATE TABLE storms (
+            id SERIAL PRIMARY KEY,
+            storm_id int NOT NULL,
+            radar_file varchar NOT NULL,
+            grid_x float NOT NULL,
+            grid_y float NOT NULL,
+            lon float NOT NULL,
+            lat float NOT NULL,
+            area float NOT NULL,
+            volume float NOT NULL,
+            max_refl float NOT NULL,
+            max_alt float NOT NULL,
+            isolated boolean NOT NULL,
+            FOREIGN KEY (radar_file)
+            REFERENCES nexrad_data (filename)
+            ON UPDATE CASCADE ON DELETE CASCADE
         )
         """,
         """
-        CREATE TABLE "storms" (
-          "id" SERIAL PRIMARY KEY,
-          "storm_id" int,
-          "radar_file" str,
-          "grid_x" float,
-          "grid_y" float,
-          "lon" float,
-          "lat" float,
-          "area" float,
-          "volume" float,
-          "max_refl" float,
-          "max_alt" float,
-          "isolated" boolean
-        )
-        """
-        """
-        CREATE TABLE part_drawings (
-                part_id INTEGER PRIMARY KEY,
-                file_extension VARCHAR(5) NOT NULL,
-                drawing_data BYTEA NOT NULL,
-                FOREIGN KEY (part_id)
-                REFERENCES parts (part_id)
+        CREATE TABLE flashes (
+            id SERIAL PRIMARY KEY,
+            flash_id int NOT NULL,
+            data_id varchar NOT NULL,
+            storm_id int NOT NULL,
+            lat float NOT NULL,
+            lon float NOT NULL,
+            area float NOT NULL,
+            energy float NOT NULL,
+            quality_flag int NOT NULL,
+            FOREIGN KEY (data_id)
+                REFERENCES lightning_data (filename)
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            FOREIGN KEY (storm_id)
+                REFERENCES storms (id)
                 ON UPDATE CASCADE ON DELETE CASCADE
         )
-        """,
         """
-        CREATE TABLE vendor_parts (
-                vendor_id INTEGER NOT NULL,
-                part_id INTEGER NOT NULL,
-                PRIMARY KEY (vendor_id , part_id),
-                FOREIGN KEY (vendor_id)
-                    REFERENCES vendors (vendor_id)
-                    ON UPDATE CASCADE ON DELETE CASCADE,
-                FOREIGN KEY (part_id)
-                    REFERENCES parts (part_id)
-                    ON UPDATE CASCADE ON DELETE CASCADE
-        )
-        """)
+    )
     conn = None
     try:
         # read the connection parameters

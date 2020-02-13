@@ -36,4 +36,4 @@ def connect():
             print('Database connection closed.')
 
 
-connect()
+# connect()

@@ -35,30 +35,10 @@ def create_tables():
         )
         """,
         """
-        CREATE TABLE storms (
-            id SERIAL PRIMARY KEY,
-            storm_id int NOT NULL,
-            radar_file varchar NOT NULL,
-            grid_x float NOT NULL,
-            grid_y float NOT NULL,
-            lon float NOT NULL,
-            lat float NOT NULL,
-            area float NOT NULL,
-            volume float NOT NULL,
-            max_refl float NOT NULL,
-            max_alt float NOT NULL,
-            isolated boolean NOT NULL,
-            FOREIGN KEY (radar_file)
-            REFERENCES nexrad_data (filename)
-            ON UPDATE CASCADE ON DELETE CASCADE
-        )
-        """,
-        """
         CREATE TABLE flashes (
             id SERIAL PRIMARY KEY,
             flash_id int NOT NULL,
             data_id varchar NOT NULL,
-            storm_id int NOT NULL,
             lat float NOT NULL,
             lon float NOT NULL,
             area float NOT NULL,
@@ -66,9 +46,6 @@ def create_tables():
             quality_flag int NOT NULL,
             FOREIGN KEY (data_id)
                 REFERENCES lightning_data (filename)
-                ON UPDATE CASCADE ON DELETE CASCADE,
-            FOREIGN KEY (storm_id)
-                REFERENCES storms (id)
                 ON UPDATE CASCADE ON DELETE CASCADE
         )
         """

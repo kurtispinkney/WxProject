@@ -1,4 +1,5 @@
 import datetime
+import psycopg2
 import os
 import re
 
@@ -9,7 +10,17 @@ dbuser = os.environ.get('DBUSER')
 password = os.environ.get('DBPASSWORD')
 database = os.environ.get('DATABASE')
 
+query="INSERT INTO nexrad_data () FROM amzn.serverless_test LIMIT 2"
+
+
 def make_connection():
+
+    conn_str = f"host={endpoint} dbname={database} user={dbuser}" \
+               f" password={password} port={port}"
+    conn = psycopg2.connect(conn_str)
+    conn.autocommit = True
+
+    return conn
 
 
 def extract_radar_info(s3_file):
@@ -27,6 +38,13 @@ def extract_radar_info(s3_file):
     event_datetime_obj = datetime.datetime.strptime(
         event_datetime, "%Y%m%d_%H%M%S")
 
+    return {"year": event_datetime_obj.year,
+            "month": event_datetime_obj.month,
+            "day": event_datetime_obj.day,
+            "hour": event_datetime_obj.hour,
+            "min": event_datetime_obj.minute,
+            "sec": event_datetime_obj.second}
+
 
 def handler(event, context):
     """
@@ -40,3 +58,17 @@ def handler(event, context):
     """
     s3_event = event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]["key"]
 
+    try:
+        cnx = make_connection()
+        var = "worked"
+        print('it worked')
+    except psycopg2.Error as e:
+        print("you thought")
+        var = "failed"
+
+    return {"body": var, "headers": {}, "statusCode": 200,
+        "isBase64Encoded":"false"}
+
+
+# if __name__ == "__main__":
+#     handler(None, None)

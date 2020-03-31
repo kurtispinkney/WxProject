@@ -19,24 +19,28 @@ event = {'Records': [{'EventSource': 'aws:sns', 'EventVersion': '1.0',
 # print(event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]["object"]["key"])
 
 
-def test_unexpected_file_date(s3_file):
+def test_unexpected_file_date():
     s3_file = "2020/03/10/KBUF/KBUF20200310_0216459_V06"
 
     with pytest.raises(ValueError):
         get_nexrad_data.extract_radar_info(s3_file)
 
 
-def test_expected_file_date():
-    pass
-
-
 def test_correct_dict_returned():
+    s3_file = "2020/03/10/KBUF/KBUF20200310_021645_V06"
+    expected = {"year": 2020,
+                "month": 3,
+                "day": 10,
+                "hour": 2,
+                "min": 16,
+                "sec": 45}
+
+    assert get_nexrad_data.extract_radar_info(s3_file) == expected
+
+
+def test_db_connection_success():
     pass
 
 
-def db_connection_success():
-    pass
-
-
-def db_connection_fail():
+def test_db_connection_fail():
     pass

@@ -35,8 +35,8 @@ def extract_radar_info(s3_file):
     pairs.
     """
 
-    event_datetime = re.match(
-        r"(?P<file_datetime>\d{8}_\d{6})", s3_file)
+    event_datetime = re.search(
+        r"(?P<file_datetime>\d{8}_\d{6})_V06", s3_file)
 
     if event_datetime:
         event_datetime_obj = datetime.datetime.strptime(

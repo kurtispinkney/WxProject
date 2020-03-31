@@ -10,7 +10,9 @@ dbuser = os.environ.get('DBUSER')
 password = os.environ.get('DBPASSWORD')
 database = os.environ.get('DATABASE')
 
-query="INSERT INTO nexrad_data () FROM amzn.serverless_test LIMIT 2"
+query = "INSERT INTO nexrad_data" \
+        "(filename, s3_object, radar_id, year, month, day, hour, min, second)"\
+        "VALUES (%s %s %s %s %s %s %s %s %s)"
 
 
 def make_connection():
@@ -29,14 +31,18 @@ def extract_radar_info(s3_file):
     SNS.
 
     :param s3_file: S3 file retrieved from SNS message sent from S3 bucket.
-    :return:
+    :return: Dictionary containing year, month, day, hour, min, sec key/value
+    pairs.
     """
 
     event_datetime = re.match(
-        r"(?P<file_datetime>\d{8}_\d{6})", s3_file).group("file_datetime")
+        r"(?P<file_datetime>\d{8}_\d{6})", s3_file)
 
-    event_datetime_obj = datetime.datetime.strptime(
-        event_datetime, "%Y%m%d_%H%M%S")
+    if event_datetime:
+        event_datetime_obj = datetime.datetime.strptime(
+            event_datetime.group("file_datetime"), "%Y%m%d_%H%M%S")
+    else:
+        raise ValueError("File with unexpected date/time format received.")
 
     return {"year": event_datetime_obj.year,
             "month": event_datetime_obj.month,
@@ -56,7 +62,7 @@ def handler(event, context):
     execution environment.
     :return:
     """
-    s3_event = event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]["key"]
+    s3_event = event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]["object"]["key"]
 
     try:
         cnx = make_connection()

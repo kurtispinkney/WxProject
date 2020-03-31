@@ -1,5 +1,7 @@
 import pytest
 
+from src.lambda_functions import get_nexrad_data
+
 event = {'Records': [{'EventSource': 'aws:sns', 'EventVersion': '1.0',
               'EventSubscriptionArn': 'arn:aws:sns:us-east-1:811054952067:NewNEXRADLevel2Archive:92d170df-3f45-4833-b8ff-e3d7cdb8d861',
               'Sns': {'Type': 'Notification',
@@ -14,4 +16,27 @@ event = {'Records': [{'EventSource': 'aws:sns', 'EventVersion': '1.0',
                       'UnsubscribeUrl': 'https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:811054952067:NewNEXRADLevel2Archive:92d170df-3f45-4833-b8ff-e3d7cdb8d861',
                       'MessageAttributes': {}}}]}
 
-print(event["Records"][0]["Sns"]["Message"]["Records'''"][0]["s3"])
+# print(event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]["object"]["key"])
+
+
+def test_unexpected_file_date(s3_file):
+    s3_file = "2020/03/10/KBUF/KBUF20200310_0216459_V06"
+
+    with pytest.raises(ValueError):
+        get_nexrad_data.extract_radar_info(s3_file)
+
+
+def test_expected_file_date():
+    pass
+
+
+def test_correct_dict_returned():
+    pass
+
+
+def db_connection_success():
+    pass
+
+
+def db_connection_fail():
+    pass

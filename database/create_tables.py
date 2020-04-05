@@ -14,8 +14,8 @@ def create_tables():
         """,
         """
         CREATE TABLE nexrad_data (
-            filename varchar PRIMARY KEY,
-            s3_object varchar NOT NULL,
+            key varchar PRIMARY KEY,
+            bucket varchar NOT NULL,
             radar_id varchar NOT NULL,
             year int NOT NULL,
             month int NOT NULL,

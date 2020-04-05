@@ -1,8 +1,9 @@
+import datetime
 import pytest
 
 from src.lambda_functions import get_nexrad_data
 
-event = {'Records': [{'EventSource': 'aws:sns', 'EventVersion': '1.0',
+sns_event = {'Records': [{'EventSource': 'aws:sns', 'EventVersion': '1.0',
               'EventSubscriptionArn': 'arn:aws:sns:us-east-1:811054952067:NewNEXRADLevel2Archive:92d170df-3f45-4833-b8ff-e3d7cdb8d861',
               'Sns': {'Type': 'Notification',
                       'MessageId': 'a13ce577-3c14-505c-9f47-b397c7ea8a97',
@@ -16,26 +17,36 @@ event = {'Records': [{'EventSource': 'aws:sns', 'EventVersion': '1.0',
                       'UnsubscribeUrl': 'https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:811054952067:NewNEXRADLevel2Archive:92d170df-3f45-4833-b8ff-e3d7cdb8d861',
                       'MessageAttributes': {}}}]}
 
-# print(event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]["object"]["key"])
+s3_event = sns_event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]
 
 
 def test_unexpected_file_date():
-    s3_file = "2020/03/10/KBUF/KBUF20200310_0216459_V06"
+    #
+    bad_s3_key = "2020/03/10/KBUF/KBUF20200310_0216459_V06"
 
     with pytest.raises(ValueError):
-        get_nexrad_data.extract_radar_info(s3_file)
+        get_nexrad_data._scrape_date_info(bad_s3_key)
+
+
+def test_correct_datetime_object_returned():
+    s3_key = "2020/03/10/KBUF/KBUF20200310_021645_V06"
+
+    assert get_nexrad_data._scrape_date_info(s3_key) == \
+           datetime.datetime(2020, 3, 10, 2, 16, 45)
 
 
 def test_correct_dict_returned():
-    s3_file = "2020/03/10/KBUF/KBUF20200310_021645_V06"
-    expected = {"year": 2020,
-                "month": 3,
-                "day": 10,
-                "hour": 2,
-                "min": 16,
-                "sec": 45}
+    expected = ("2020/03/10/KBUF/KBUF20200310_021645_V06",
+                "noaa-nexrad-level2",
+                "KBUF",
+                2020,
+                3,
+                10,
+                2,
+                16,
+                45)
 
-    assert get_nexrad_data.extract_radar_info(s3_file) == expected
+    assert get_nexrad_data.extract_radar_info(s3_event) == expected
 
 
 def test_db_connection_success():

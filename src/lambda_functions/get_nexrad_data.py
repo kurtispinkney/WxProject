@@ -15,7 +15,7 @@ query = "INSERT INTO nexrad_data" \
         "VALUES (%s %s %s %s %s %s %s %s %s)"
 
 
-def make_connection():
+def make_connection() -> psycopg2.extensions.connection:
 
     conn_str = f"host={endpoint} dbname={database} user={dbuser}" \
                f" password={password} port={port}"
@@ -25,55 +25,80 @@ def make_connection():
     return conn
 
 
-def extract_radar_info(s3_file):
+def _scrape_date_info(s3_key: str) -> datetime.datetime:
     """
-    Extracts information from NEXRAD files being passed to this function via
-    SNS.
+    Helper function that searches for regex date/time pattern in key filename
+    and returns a datetime object using the matched string.
 
-    :param s3_file: S3 file retrieved from SNS message sent from S3 bucket.
-    :return: Dictionary containing year, month, day, hour, min, sec key/value
-    pairs.
+    :param s3_key: S3 bucket key associated with SNS message.
+    :return: Datetime object created from key filename date/time string.
     """
 
     event_datetime = re.search(
-        r"(?P<file_datetime>\d{8}_\d{6})_V06", s3_file)
+        r"(?P<file_datetime>\d{8}_\d{6})_V06", s3_key)
 
     if event_datetime:
-        event_datetime_obj = datetime.datetime.strptime(
+        return datetime.datetime.strptime(
             event_datetime.group("file_datetime"), "%Y%m%d_%H%M%S")
     else:
         raise ValueError("File with unexpected date/time format received.")
 
-    return {"year": event_datetime_obj.year,
-            "month": event_datetime_obj.month,
-            "day": event_datetime_obj.day,
-            "hour": event_datetime_obj.hour,
-            "min": event_datetime_obj.minute,
-            "sec": event_datetime_obj.second}
 
-
-def handler(event, context):
+def extract_radar_info(s3_event: dict) -> tuple:
     """
-    Extracts information from NEXRAD files being passed to this function via
-    SNS.
+    Extracts bucket and filename information from S3 event associated with SNS
+    message.
 
-    :param event: Information related to SNS event passed to the function
+    :param s3_event: S3 event retrieved from SNS message sent from S3 bucket.
+    :return: Dictionary containing s3_key, s3_bucket, radar_id,
+    year, month, day, hour, min, sec key/value
+    pairs.
+    """
+
+    s3_key = s3_event["object"]["key"]
+    event_datetime_obj = _scrape_date_info(s3_key)
+
+    s3_bucket = s3_event["bucket"]["name"]
+
+    radar_id = re.search(r"/(?P<radar_id>\D{4})/", s3_key).group("radar_id")
+
+    return (s3_key,
+            s3_bucket,
+            radar_id,
+            event_datetime_obj.year,
+            event_datetime_obj.month,
+            event_datetime_obj.day,
+            event_datetime_obj.hour,
+            event_datetime_obj.minute,
+            event_datetime_obj.second)
+
+
+def handler(event: dict, context: dict):
+    """
+    Extracts relevant information from SNS message and inserts into a database.
+
+    :param event: SNS event passed to the function
     :param context: Provides information related to invocation, function, and
     execution environment.
-    :return:
     """
-    s3_event = event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]["object"]["key"]
+
+    s3_event = event["Records"][0]["Sns"]["Message"]["Records"][0]["s3"]
+
+    insert_records = extract_radar_info(s3_event)
 
     try:
-        cnx = make_connection()
-        var = "worked"
-        print('it worked')
+        conn = make_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(query, insert_records)
+        except (Exception, psycopg2.DatabaseError) as e:
+            raise RuntimeError(f"Couldn't execute query: {query} because of "
+                               f"error {e}.")
     except psycopg2.Error as e:
-        print("you thought")
-        var = "failed"
-
-    return {"body": var, "headers": {}, "statusCode": 200,
-        "isBase64Encoded":"false"}
+        raise(f"There was an error {e} while attempting to connect to database"
+              f" {database}.")
+    finally:
+        conn.close()
 
 
 # if __name__ == "__main__":

@@ -120,7 +120,29 @@ resource "aws_lambda_function" "function" {
   runtime       = "python3.8"
   environment {
     variables = {
-
+        DATABASE = var.database
+        ENDPOINT = var.host
+        PORT = var.port
+        DBUSER = var.user
+        DBPASSWORD = var.password
     }
   }
 }
+resource "aws_sns_topic" "topic" {
+  name = "NewNEXRADLevel2Archive"
+}
+
+resource "aws_sns_topic_subscription" "topic_lambda" {
+  topic_arn = "${aws_sns_topic.topic.arn}"
+  protocol  = "lambda"
+  endpoint  = "${aws_lambda_function.function.arn}"
+}
+
+resource "aws_lambda_permission" "with_sns" {
+    statement_id = "AllowExecutionFromSNS"
+    action = "lambda:DisableInvokeFunction"
+    function_name = "${aws_lambda_function.function.arn}"
+    principal = "sns.amazonaws.com"
+    source_arn = "${aws_sns_topic.topic.arn}"
+}
+

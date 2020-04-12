@@ -8,3 +8,4 @@ venv/
 radar_data/
 *.ini
 AWS_AccessKeys
+*.tfvars

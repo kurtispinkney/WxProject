@@ -1,5 +1,5 @@
 # WxProject
-This is a project that aims to associate various weather phenomenon with their respective storm by relating disparate weather datasets. The end goal is to create an API interface that end users (students, researchers, etc.) can use to pull storm relative datasets made publicily available through the NOAA Big Data Project. 
+This is a project that aims to associate various weather phenomenon with their respective storm by relating disparate weather datasets. The end goal would be to create an API interface that end users (students, researchers, etc.) can use to pull storm relative datasets made publicily available through the NOAA Big Data Project, but is largely serving as a means for me to explore AWS services. 
 
 ## Table of Contents
 1. [Data](#data)
